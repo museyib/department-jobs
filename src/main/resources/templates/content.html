@@ -1,0 +1,29 @@
+<div class='tab'>
+    <button class='tab-button' onclick='showSelection(this)'
+            th:each='sheet:${contentData.getSheetDataList()}'
+            th:value='${sheet.getName()}'
+            th:text='${sheet.getName()}'
+            th:classappend='${sheet.priority == 0 ? "active" : ""}'></button>
+</div>
+<div class='content'
+     th:each='sheet:${contentData.getSheetDataList()}'
+     th:id='${sheet.getName()}'
+     th:classappend='${sheet.priority > 0 ? "d-none" : ""}'>
+    <table class='table table-sm table-striped table-bordered'>
+        <thead>
+        <tr>
+            <th th:each='header:${sheet.getHeaders()}'
+                th:text='${header}'></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each='dataRow:${sheet.getRowDataList()}'
+            th:attr="tag=${dataRow.tag}"
+            onclick="showHiddenRows(this)">
+            <td th:each="cellData:${dataRow.getCellDataList()}"
+                th:class="${dataRow.isParent ? 'parent-row' : (dataRow.isChild ? 'child-row d-none ' + dataRow.className : '')}"
+                th:text="${dataRow.isParent ? ((cellData.col >= 4 && cellData.col <= 7) ? sheet.getTotalAmount(dataRow.tag, cellData.col) : (cellData.col == 2 ? cellData.data : ''))  : cellData.data}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
