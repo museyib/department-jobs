@@ -1,4 +1,4 @@
-package az.inci.department_jobs;
+package az.inci.department_jobs.model;
 
 import lombok.Data;
 
@@ -10,10 +10,10 @@ public class SheetData
 {
     private int priority;
     private String name;
-    private List<String> headers;
+    private List<HeaderData> headers;
     private List<RowData> rowDataList;
 
-    public void addHeader(String header)
+    public void addHeader(HeaderData header)
     {
         headers.add(header);
     }

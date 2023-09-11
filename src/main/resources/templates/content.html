@@ -12,8 +12,10 @@
     <table class='table table-sm table-hover table-bordered'>
         <thead class="sticky-table-head">
         <tr>
-            <th th:each='header:${sheet.getHeaders()}'
-                th:text='${header}'></th>
+            <th class="table-head"
+                th:each='header:${sheet.getHeaders()}'
+                th:text='${header.getText()}'
+                th:style="${'width: ' + header.getWidth() + 'px;'}"></th>
         </tr>
         </thead>
         <tbody>
@@ -22,7 +24,9 @@
             onclick="showHiddenRows(this)">
             <td th:each="cellData:${dataRow.getCellDataList()}"
                 th:class="${dataRow.isParent ? 'parent-row' : (dataRow.isChild ? 'child-row d-none ' + dataRow.className : '')}"
-                th:text="${dataRow.isParent ? ((cellData.col >= 4 && cellData.col <= 7) ? sheet.getTotalAmount(dataRow.tag, cellData.col) : (cellData.col == 2 ? cellData.data : ''))  : cellData.data}"></td>
+                th:text="${dataRow.isParent ? ((cellData.col >= 4 && cellData.col <= 7) ? sheet.getTotalAmount(dataRow.tag, cellData.col) : (cellData.col == 2 ? cellData.data : ''))  : cellData.data}"
+                th:classappend="${dataRow.isFooter() ? 'table-foot' : ''}"
+                th:style="${'height: ' + dataRow.getHeight() + 'px;'}"></td>
         </tr>
         </tbody>
     </table>

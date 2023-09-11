@@ -1,7 +1,7 @@
 table {
     height: 1px;
     width: 1px;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 body
@@ -87,4 +87,15 @@ body
 {
     position: sticky;
     top: 50px;
+}
+
+.table-head
+{
+    background-color: #edf5f5 !important;
+}
+
+.table-foot
+{
+    background-color: #c8e7e7 !important;
+    font-weight: bold;
 }

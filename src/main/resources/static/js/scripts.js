@@ -90,7 +90,7 @@ function showContentWithPassword()
         passwordElement.addClass('alert alert-danger is-invalid').focus();
         return;
     }
-    data = 'department=' + fileName + '&password=' + window.btoa(password);
+    data = 'department=' + fileName + '&password=' + window.btoa(password) + '&encoded=true';
 
     ajaxRequest();
 }

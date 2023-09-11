@@ -1,5 +1,7 @@
-package az.inci.department_jobs;
+package az.inci.department_jobs.service;
 
+import az.inci.department_jobs.model.*;
+import az.inci.department_jobs.service.security.UserService;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
@@ -29,6 +31,13 @@ public class DepartmentService
 {
     @Value("${data-source-folder}")
     private String rootFolder;
+
+    private final UserService userService;
+
+    public DepartmentService(UserService userService)
+    {
+        this.userService = userService;
+    }
 
     public List<String> getDepartments()
     {
@@ -60,6 +69,38 @@ public class DepartmentService
         return fileList;
     }
 
+    public List<String> getDepartmentsByScope(String scope)
+    {
+        File root = new File(rootFolder);
+        List<String> fileList = new ArrayList<>();
+        File[] files = root.listFiles(file -> {
+            DosFileAttributes attributes;
+            try
+            {
+                attributes = Files.readAttributes(file.toPath(), DosFileAttributes.class);
+            }
+            catch(IOException e)
+            {
+                return false;
+            }
+            return file.getName().endsWith(".xlsx")
+                   && !attributes.isSystem()
+                   && !attributes.isHidden();
+
+        });
+        if(files != null)
+        {
+            for(File file : files)
+            {
+                String fileName = file.getName();
+                if(scope.equals(fileName.substring(0, file.getName().length() - 5)))
+                    fileList.add(fileName);
+            }
+        }
+
+        return fileList;
+    }
+
     public ReportData getContent(String department)
     {
         File file = new File(rootFolder, department);
@@ -68,18 +109,14 @@ public class DepartmentService
 
         try (Workbook workbook = new XSSFWorkbook(file)) {
             gatReportData(reportData, workbook);
-        } catch (IOException e) {
+        } catch (IOException | InvalidFormatException e) {
             e.printStackTrace();
-        }
-        catch(InvalidFormatException e)
-        {
-            throw new RuntimeException(e);
         }
 
         return reportData;
     }
 
-    public ReportData getContentWithPassword(String department, String password)
+    public ReportData getContentWithPassword(String department, String password, boolean encoded)
     {
         File file = new File(rootFolder, department);
         ReportData reportData = new ReportData();
@@ -92,7 +129,9 @@ public class DepartmentService
                 POIFSFileSystem fileSystem = new POIFSFileSystem(new FileInputStream(file));
                 EncryptionInfo encryptionInfo = new EncryptionInfo(fileSystem);
                 Decryptor decryptor = Decryptor.getInstance(encryptionInfo);
-                boolean b = decryptor.verifyPassword(new String(Base64.getDecoder().decode(password)));
+                if(encoded)
+                    password = new String(Base64.getDecoder().decode(password));
+                boolean b = decryptor.verifyPassword(password);
                 if(b)
                     workbook = new XSSFWorkbook(decryptor.getDataStream(fileSystem));
                 else
@@ -131,14 +170,20 @@ public class DepartmentService
                 {
                     Cell cell = headerRow.getCell(n);
                     if(cell != null)
-                        sheetData.addHeader(getStringValue(cell));
+                    {
+                        HeaderData headerData = new HeaderData();
+                        headerData.setCol(n);
+                        headerData.setText(getStringValue(cell));
+                        headerData.setWidth(sheet.getColumnWidthInPixels(n));
+                        sheetData.addHeader(headerData);
+                    }
                 }
 
                 String lastCompany = null;
                 int parentRowId = 0;
                 int parentRowNum = 0;
 
-                for(int r = firstRow + 1; r < sheet.getLastRowNum(); r++)
+                for(int r = firstRow + 1; r <= sheet.getLastRowNum(); r++)
                 {
                     Row row = sheet.getRow(r);
                     RowData rowData = new RowData();
@@ -146,6 +191,7 @@ public class DepartmentService
                     RowData parentRow = null;
                     if (row != null)
                     {
+                        rowData.setHeight(row.getHeightInPoints());
                         initialColumn = getInitialColumn(row);
                         for (int n = initialColumn; n < row.getLastCellNum(); n++)
                         {
@@ -190,6 +236,11 @@ public class DepartmentService
                                 cellData.setCol(n);
                                 cellData.setData(stringValue);
                                 rowData.addCellData(cellData);
+
+                                if(r == sheet.getLastRowNum() && stringValue.equalsIgnoreCase("toplam"))
+                                {
+                                    rowData.setFooter(true);
+                                }
                             }
                         }
                     }
@@ -226,5 +277,26 @@ public class DepartmentService
         }
 
         return colNum;
+    }
+
+    public String getPassword(String fileName)
+    {
+        String password = null;
+
+        try
+        {
+            for(User user : userService.getUsers())
+            {
+                if(fileName.equals(user.getScope() + ".xlsx"))
+                    password = user.getPassword();
+            }
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        ;
+        return password;
     }
 }

@@ -33,3 +33,5 @@ build/
 ### VS Code ###
 .vscode/
 /files/
+/department-jobs.pfx
+/users.json

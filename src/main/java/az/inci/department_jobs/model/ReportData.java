@@ -1,4 +1,4 @@
-package az.inci.department_jobs;
+package az.inci.department_jobs.model;
 
 import lombok.Data;
 
