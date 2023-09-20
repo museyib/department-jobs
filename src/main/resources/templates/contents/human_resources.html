@@ -1,0 +1,30 @@
+<div class='tab'>
+    <button class='tab-button' onclick='showSelection(this)'
+            th:each='sheet:${contentData.getSheetDataList()}'
+            th:value='${sheet.getName()}'
+            th:text='${sheet.getName()}'
+            th:classappend='${sheet.priority == 0 ? "active" : ""}'></button>
+</div>
+<div class='content'
+     th:each='sheet:${contentData.getSheetDataList()}'
+     th:id='${sheet.getName()}'
+     th:classappend='${sheet.priority > 0 ? "d-none" : ""}'>
+    <table class='table table-sm table-hover table-bordered'>
+        <thead class="sticky-table-head">
+        <tr>
+            <th class="table-head"
+                th:each='header:${sheet.getHeaders()}'
+                th:text='${header.getText()}'
+                th:style="${'width: ' + header.getWidth() + 'px;'}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each='dataRow:${sheet.getRowDataList()}'>
+            <td th:each="cellData:${dataRow.getCellDataList()}"
+                th:classappend="${dataRow.isFooter() ? 'table-foot' : ''}"
+                th:style="${'height: ' + dataRow.getHeight() + 'px;'}"
+                th:text="${cellData.data}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

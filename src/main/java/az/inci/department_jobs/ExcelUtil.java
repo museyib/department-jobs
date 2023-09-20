@@ -2,10 +2,7 @@ package az.inci.department_jobs;
 
 import org.apache.poi.poifs.filesystem.OfficeXmlFileException;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.io.File;
@@ -21,6 +18,7 @@ public class ExcelUtil
 {
     static DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     static DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+    public static String decimalFormat = "%.2f";
 
     public static String getStringValue(Cell cell)
     {
@@ -46,7 +44,10 @@ public class ExcelUtil
                 data = dateFormat.format(cell.getDateCellValue());
         }
         else
-            data = String.format(Locale.ENGLISH, "%.2f", cell.getNumericCellValue());
+        {
+            double value = cell.getNumericCellValue();
+            data = String.format(Locale.ENGLISH, decimalFormat, value);
+        }
 
         return data;
     }
@@ -111,5 +112,19 @@ public class ExcelUtil
         {
             return false;
         }
+    }
+    public static int getInitialColumn(Row row)
+    {
+        int colNum = 0;
+
+        while (true)
+        {
+            Cell cell = row.getCell(colNum);
+            if (cell != null || colNum >= 16384)
+                break;
+            colNum++;
+        }
+
+        return colNum;
     }
 }
