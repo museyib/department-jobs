@@ -73,6 +73,16 @@ public class DepartmentService
                 template = "contents/production";
                 dataFetcher = new Production();
             }
+            case finance ->
+            {
+                template = "contents/finance";
+                dataFetcher = new Finance();
+            }
+            case law ->
+            {
+                template = "contents/law";
+                dataFetcher = new Law();
+            }
             default ->
             {
                 template = "contents/default";

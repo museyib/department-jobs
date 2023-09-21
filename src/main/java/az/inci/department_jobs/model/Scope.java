@@ -8,4 +8,6 @@ public class Scope
     public static final String marketing = "MARKETİNQ";
     public static final String analytics = "ANALİTİKA";
     public static final String production = "İSTEHSALAT";
+    public static final String finance = "MALİYYƏ";
+    public static final String law = "HÜQUQ";
 }
