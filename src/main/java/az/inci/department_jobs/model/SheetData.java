@@ -15,6 +15,8 @@ public class SheetData
     private String name;
     private List<HeaderData> headers;
     private List<RowData> rowDataList;
+    private List<Integer> summableColumns;
+    private List<Integer> visibleColumns;
 
     public void addHeader(HeaderData header)
     {
@@ -24,6 +26,16 @@ public class SheetData
     public void addRowData(RowData rowData)
     {
         rowDataList.add(rowData);
+    }
+
+    public void addSummableColumn(Integer columnId)
+    {
+        summableColumns.add(columnId);
+    }
+
+    public void addVisibleColumn(Integer columnId)
+    {
+        visibleColumns.add(columnId);
     }
 
     public String getTotalAmount(String tag, int col)

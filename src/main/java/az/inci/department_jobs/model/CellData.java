@@ -9,4 +9,5 @@ public class CellData
     private String data;
     private double width;
     private boolean summable;
+    private boolean visible;
 }

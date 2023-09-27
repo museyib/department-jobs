@@ -1,6 +1,5 @@
 package az.inci.department_jobs.department;
 
-import az.inci.department_jobs.ExcelUtil;
 import az.inci.department_jobs.model.*;
 import lombok.NonNull;
 import org.apache.poi.ss.usermodel.Cell;
@@ -9,9 +8,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import static az.inci.department_jobs.ExcelUtil.*;
-import static az.inci.department_jobs.ExcelUtil.getStringValue;
 
 public class ReportDataFetcher
 {
@@ -19,28 +18,28 @@ public class ReportDataFetcher
     {
         ReportData reportData = new ReportData();
         reportData.setSheetDataList(new ArrayList<>());
-        int firstRow;
-        for(int i = 0; i < workbook.getNumberOfSheets(); i++)
+        int firstRowId;
+        for(int sheetId = 0; sheetId < workbook.getNumberOfSheets(); sheetId++)
         {
-            Sheet sheet = workbook.getSheetAt(i);
-            firstRow = sheet.getFirstRowNum();
+            Sheet sheet = workbook.getSheetAt(sheetId);
+            firstRowId = sheet.getFirstRowNum();
 
-            if(firstRow >= 0)
+            if(firstRowId >= 0)
             {
-                SheetData sheetData = getSheetData(firstRow, i, sheet);
+                SheetData sheetData = getSheetData(firstRowId, sheetId, sheet);
 
-                for(int r = firstRow + 1; r <= sheet.getLastRowNum(); r++)
+                for(int rowId = firstRowId + 1; rowId <= sheet.getLastRowNum(); rowId++)
                 {
-                    Row row = sheet.getRow(r);
+                    Row row = sheet.getRow(rowId);
                     RowData rowData = new RowData();
                     rowData.setCellDataList(new ArrayList<>());
                     if (row != null)
                     {
                         rowData.setHeight(row.getHeightInPoints());
                         int initialColumn = getInitialColumn(row);
-                        for (int n = initialColumn; n < row.getLastCellNum(); n++)
+                        for (int columnId = initialColumn; columnId < row.getLastCellNum(); columnId++)
                         {
-                            Cell cell = row.getCell(n);
+                            Cell cell = row.getCell(columnId);
                             if (cell != null)
                             {
                                 Cell cellFromMergedRegion = getFirstCellFromMergedRegion(sheet, cell);
@@ -51,11 +50,11 @@ public class ReportDataFetcher
                                     stringValue = getStringValue(cell);
                                 }
                                 CellData cellData = new CellData();
-                                cellData.setCol(n);
+                                cellData.setCol(columnId);
                                 cellData.setData(stringValue);
                                 rowData.addCellData(cellData);
 
-                                if(r == sheet.getLastRowNum() && stringValue.equalsIgnoreCase("toplam"))
+                                if(rowId == sheet.getLastRowNum() && stringValue.equalsIgnoreCase("toplam"))
                                 {
                                     rowData.setFooter(true);
                                 }
@@ -71,25 +70,43 @@ public class ReportDataFetcher
         return reportData;
     }
 
-    SheetData getSheetData(int firstRow, int i, Sheet sheet)
+    SheetData getSheetData(int firstRowId, int sheetId, Sheet sheet)
     {
         SheetData sheetData = new SheetData();
         sheetData.setRowDataList(new ArrayList<>());
         sheetData.setHeaders(new ArrayList<>());
+        sheetData.setSummableColumns(new ArrayList<>());
+        sheetData.setVisibleColumns(new ArrayList<>());
         sheetData.setName(sheet.getSheetName());
-        sheetData.setPriority(i);
-        Row headerRow = sheet.getRow(firstRow);
+        sheetData.setPriority(sheetId);
+        Row headerRow = sheet.getRow(firstRowId);
         int initialColumn = getInitialColumn(headerRow);
-        for(int n = initialColumn; n < headerRow.getLastCellNum(); n++)
+        for(int columnId = initialColumn; columnId < headerRow.getLastCellNum(); columnId++)
         {
-            Cell cell = headerRow.getCell(n);
+            Cell cell = headerRow.getCell(columnId);
             if(cell != null)
             {
+                String value = getStringValue(cell);
                 HeaderData headerData = new HeaderData();
-                headerData.setCol(n);
-                headerData.setText(getStringValue(cell));
-                headerData.setWidth(sheet.getColumnWidthInPixels(n));
+                headerData.setCol(columnId);
+                headerData.setText(value);
+                headerData.setWidth(sheet.getColumnWidthInPixels(columnId));
                 sheetData.addHeader(headerData);
+
+                if(Stream.of("AMOUNT",
+                             "DEPOSIT",
+                             "BALANCE",
+                             "REMAIN",
+                             "QALIQ").anyMatch(value::equalsIgnoreCase))
+                {
+                    sheetData.addSummableColumn(columnId);
+                }
+
+                if(Stream.of("PORT",
+                             "MIX or FULL").anyMatch(value::equalsIgnoreCase))
+                {
+                    sheetData.addVisibleColumn(columnId);
+                }
             }
         }
         return sheetData;

@@ -21,23 +21,23 @@ public class ForeignProcurement extends ReportDataFetcher
         decimalFormat = "%,.2f";
         ReportData reportData = new ReportData();
         reportData.setSheetDataList(new ArrayList<>());
-        int firstRow;
-        for(int i = 0; i < workbook.getNumberOfSheets(); i++)
+        int firstRowId;
+        for(int sheetId = 0; sheetId < workbook.getNumberOfSheets(); sheetId++)
         {
-            Sheet sheet = workbook.getSheetAt(i);
-            firstRow = sheet.getFirstRowNum();
+            Sheet sheet = workbook.getSheetAt(sheetId);
+            firstRowId = sheet.getFirstRowNum();
 
-            if(firstRow >= 0)
+            if(firstRowId >= 0)
             {
-                SheetData sheetData = getSheetData(firstRow, i, sheet);
+                SheetData sheetData = getSheetData(firstRowId, sheetId, sheet);
 
-                String lastCompany = null;
+                String rowTitle = null;
                 int parentRowId = 0;
                 int parentRowNum = 0;
 
-                for(int r = firstRow + 1; r <= sheet.getLastRowNum(); r++)
+                for(int rowId = firstRowId + 1; rowId <= sheet.getLastRowNum(); rowId++)
                 {
-                    Row row = sheet.getRow(r);
+                    Row row = sheet.getRow(rowId);
                     RowData rowData = new RowData();
                     rowData.setCellDataList(new ArrayList<>());
                     RowData parentRow = null;
@@ -45,9 +45,9 @@ public class ForeignProcurement extends ReportDataFetcher
                     {
                         rowData.setHeight(row.getHeightInPoints());
                         int initialColumn = getInitialColumn(row);
-                        for (int n = initialColumn; n < row.getLastCellNum(); n++)
+                        for (int columnId = initialColumn; columnId < row.getLastCellNum(); columnId++)
                         {
-                            Cell cell = row.getCell(n);
+                            Cell cell = row.getCell(columnId);
                             if (cell != null)
                             {
                                 Cell cellFromMergedRegion = getFirstCellFromMergedRegion(sheet, cell);
@@ -59,17 +59,17 @@ public class ForeignProcurement extends ReportDataFetcher
                                     stringValue = getStringValue(cell);
                                 }
 
-                                if(n == initialColumn + 2)
+                                if(columnId == initialColumn + 2)
                                 {
-                                    if(r == firstRow + 1)
+                                    if(rowId == firstRowId + 1)
                                     {
-                                        lastCompany = stringValue;
+                                        rowTitle = stringValue;
                                     }
                                     else
                                     {
-                                        if(lastCompany != null && lastCompany.equals(stringValue) && isChildRow)
+                                        if(rowTitle != null && rowTitle.equals(stringValue) && isChildRow)
                                         {
-                                            String tag = i + "-" + parentRowId + "-" + stringValue;
+                                            String tag = sheetId + "-" + parentRowId + "-" + stringValue;
                                             rowData.setParentRowId(parentRowId);
                                             rowData.setChild(true);
                                             rowData.setClassName(tag);
@@ -79,22 +79,24 @@ public class ForeignProcurement extends ReportDataFetcher
                                         }
                                         else
                                         {
-                                            lastCompany = stringValue;
-                                            parentRowId = r - firstRow - 1 + parentRowNum;
+                                            rowTitle = stringValue;
+                                            parentRowId = rowId - firstRowId - 1 + parentRowNum;
                                         }
                                     }
                                 }
                                 CellData cellData = new CellData();
-                                cellData.setCol(n);
+                                cellData.setCol(columnId);
                                 cellData.setData(stringValue);
-                                if(sheetData.getName().equals("Yükləmə gözləyən") && n >= 4 && n <= 7)
+
+                                if(sheetData.getSummableColumns().contains(columnId))
                                     cellData.setSummable(true);
-                                if(sheetData.getName().equals("Yolda olanlar") && n >= 5 && n <= 8)
-                                    cellData.setSummable(true);
+
+                                if(sheetData.getVisibleColumns().contains(columnId))
+                                    cellData.setVisible(true);
 
                                 rowData.addCellData(cellData);
 
-                                if(r == sheet.getLastRowNum() && stringValue.equalsIgnoreCase("toplam"))
+                                if(rowId == sheet.getLastRowNum() && stringValue.equalsIgnoreCase("toplam"))
                                 {
                                     rowData.setFooter(true);
                                 }
@@ -103,7 +105,7 @@ public class ForeignProcurement extends ReportDataFetcher
                     }
                     List<RowData> rowDataList = sheetData.getRowDataList();
                     if(rowData.isChild() &&
-                       rowDataList.size()-rowDataList.indexOf(parentRow)==1)
+                       rowDataList.size() - rowDataList.indexOf(parentRow) == 1)
                     {
                         sheetData.addRowData(RowData.childCopyOf(parentRow, parentRowId));
                         parentRowNum++;

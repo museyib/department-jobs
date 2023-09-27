@@ -24,10 +24,9 @@
             onclick="showHiddenRows(this)">
             <td th:each="cellData:${dataRow.getCellDataList()}"
                 th:class="${dataRow.isParent ? 'parent-row' : (dataRow.isChild ? 'child-row d-none ' + dataRow.className : '')}"
-                th:text="${dataRow.isParent ?
+                th:text="${(dataRow.isParent && !cellData.isVisible) ?
                         (cellData.isSummable ?
-                            sheet.getTotalAmount(dataRow.tag, cellData.col) :
-                            (cellData.col == 2 ? cellData.data : ''))  :
+                            sheet.getTotalAmount(dataRow.tag, cellData.col) : '')  :
                         cellData.data}"
                 th:classappend="${dataRow.isFooter() ? 'table-foot' : ''}"
                 th:style="${'height: ' + dataRow.getHeight() + 'px;'}"></td>
