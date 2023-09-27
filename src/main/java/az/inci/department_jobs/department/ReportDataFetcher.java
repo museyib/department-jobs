@@ -17,7 +17,6 @@ public class ReportDataFetcher
 {
     public ReportData fetchReportData(@NonNull Workbook workbook)
     {
-        decimalFormat = "%.0f";
         ReportData reportData = new ReportData();
         reportData.setSheetDataList(new ArrayList<>());
         int firstRow;

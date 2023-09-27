@@ -1,9 +1,12 @@
 package az.inci.department_jobs.model;
 
+import az.inci.department_jobs.ExcelUtil;
 import lombok.Data;
 
 import java.util.List;
 import java.util.Locale;
+
+import static az.inci.department_jobs.ExcelUtil.decimalFormat;
 
 @Data
 public class SheetData
@@ -34,7 +37,7 @@ public class SheetData
                 double amount;
                 try
                 {
-                    amount = Double.parseDouble(rowData.getCellDataList().get(col).getData());
+                    amount = Double.parseDouble(rowData.getCellDataList().get(col).getData().replace(",", ""));
                 }
                 catch(NumberFormatException e)
                 {
@@ -44,6 +47,6 @@ public class SheetData
             }
         }
 
-        return String.format(Locale.ENGLISH, "%.2f", total);
+        return String.format(Locale.ENGLISH, decimalFormat, total);
     }
 }

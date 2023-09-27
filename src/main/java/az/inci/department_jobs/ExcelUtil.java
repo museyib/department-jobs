@@ -18,7 +18,7 @@ public class ExcelUtil
 {
     static DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     static DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-    public static String decimalFormat = "%.2f";
+    public static String decimalFormat = "%.0f";
 
     public static String getStringValue(Cell cell)
     {

@@ -18,7 +18,7 @@ public class ForeignProcurement extends ReportDataFetcher
     @Override
     public ReportData fetchReportData(@NonNull Workbook workbook)
     {
-        decimalFormat = "%.2f";
+        decimalFormat = "%,.2f";
         ReportData reportData = new ReportData();
         reportData.setSheetDataList(new ArrayList<>());
         int firstRow;
@@ -87,6 +87,11 @@ public class ForeignProcurement extends ReportDataFetcher
                                 CellData cellData = new CellData();
                                 cellData.setCol(n);
                                 cellData.setData(stringValue);
+                                if(sheetData.getName().equals("Yükləmə gözləyən") && n >= 4 && n <= 7)
+                                    cellData.setSummable(true);
+                                if(sheetData.getName().equals("Yolda olanlar") && n >= 5 && n <= 8)
+                                    cellData.setSummable(true);
+
                                 rowData.addCellData(cellData);
 
                                 if(r == sheet.getLastRowNum() && stringValue.equalsIgnoreCase("toplam"))

@@ -8,4 +8,5 @@ public class CellData
     private int col;
     private String data;
     private double width;
+    private boolean summable;
 }
